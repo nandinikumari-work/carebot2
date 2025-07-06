@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CareBot 🩺</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #e0f7fa, #fce4ec);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 30px;
+      display: flex;
+      justify-content: center;
+    }
+    #chatbox {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      padding: 25px;
+      width: 100%;
+      max-width: 700px;
+      position: relative;
+    }
+    #chat {
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+    .message {
+      margin-bottom: 12px;
+    }
+    .user {
+      color: #007acc;
+      font-weight: bold;
+    }
+    .bot {
+      color: #444;
+    }
+    input[type="text"] {
+      width: 75%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+    }
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      background: #ff69b4;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .disclaimer {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: 20px;
+      text-align: center;
+    }
+    .header {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #d81b60;
+      text-align: center;
+    }
+    .suggestions {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: #555;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 10px;
+    }
+    .suggestions span {
+      background: #ffe4ec;
+      padding: 6px 10px;
+      border-radius: 8px;
+      margin: 5px;
+      display: inline-block;
+      cursor: pointer;
+    }
+    .suggestions span:hover {
+      background: #ffd6e5;
+    }
+  </style>
+</head>
+<body>
+  <div id="chatbox">
+    <div class="header">CareBot 🩺 — Your Friendly Medical Helper</div>
+    <div id="chat"></div>
+    <input type="text" id="userInput" placeholder="Describe your symptom..." />
+    <button onclick="sendMessage()">Send</button>
+    <div class="suggestions">
+      Try: <span onclick="fillSymptom('Headache')">Headache</span>
+      <span onclick="fillSymptom('Cold and cough')">Cold and cough</span>
+      <span onclick="fillSymptom('Stomach pain')">Stomach pain</span>
+      <span onclick="fillSymptom('Fever')">Fever</span>
+      <span onclick="fillSymptom('Body ache')">Body ache</span>
+      <span onclick="fillSymptom('Pain in lower back')">Lower back pain</span>
+    </div>
+    <div class="disclaimer">
+      ⚠️ This chatbot provides only general advice and OTC suggestions. Please consult a licensed doctor for medical treatment.
+    </div>
+  </div>
+
+  <script>
+    const chat = document.getElementById('chat');
+
+    function addMessage(sender, text) {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message');
+      messageDiv.innerHTML = `<span class="${sender}">${sender === 'user' ? 'You' : 'CareBot'}:</span> ${text}`;
+      chat.appendChild(messageDiv);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const userInput = document.getElementById('userInput');
+      const message = userInput.value.trim();
+      if (!message) return;
+      addMessage('user', message);
+      userInput.value = '';
+
+      const response = await getBotReply(message);
+      addMessage('bot', response);
+    }
+
+    async function getBotReply(message) {
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+        return data.reply;
+      } catch (error) {
+        console.error('Error:', error);
+        return "I'm sorry, something went wrong while trying to help. Please try again later.";
+      }
+    }
+
+    function fillSymptom(text) {
+      document.getElementById('userInput').value = text;
+    }
+  </script>
+</body>
+</html>
